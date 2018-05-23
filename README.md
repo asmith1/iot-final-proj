@@ -2,7 +2,7 @@
 
 ## To do:
 - //connect to wifi
-- upload to database
+- //upload to database
 - save last few measurements and make prediction straight in code (smooth it out)
 - set threshold and make the light go on
 - use grafana to visualize data
