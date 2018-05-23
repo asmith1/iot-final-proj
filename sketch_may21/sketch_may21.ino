@@ -13,7 +13,7 @@ FishinoClient client;
 //IPAddress server(192, 168, 1, 1); // BBB
 //IPAddress server(5, 168, 128, 141);
 IPAddress server(172, 20, 10, 2);
-IPAddress server2(127, 0, 0, 1);
+//IPAddress server2(127, 0, 0, 1);
 
 DHT dht(DHTPIN, DHT11);
 
@@ -21,7 +21,7 @@ DHT dht(DHTPIN, DHT11);
 // Setup the wireless connection
 boolean connectWiFi() {
   char WLAN_SSID[]="AshleyiPhone";
-  char WLAN_PASSWD[]="123ashleypassfu";
+  char WLAN_PASSWD[]="123ashleypass";
   int nattempt=0;
  
    while(!Fishino.reset()) {}
@@ -71,8 +71,8 @@ void setup() {
 
 void loop() {
   // connect to the influxdb port
-  if (!client.connect(server2, 8086)) 
-    Serial.println("Did not connect");
+  if (!client.connect(server, 8086)) 
+    Serial.println("Did not connect to influxdb port");
 
   float temp = dht.readTemperature(); // reads temperature in Celsius
   float hum = dht.readHumidity(); // reads humidity in percentage
@@ -95,6 +95,7 @@ void loop() {
     // creates proper string to post
     String tempLine = "temperature value=" + String(temp);
     String humLine = "humidity value=" + String(hum);
+    String combinedLine = tempLine + ", " + humLine;
   
     // print the lines that will be posted to the screen
     Serial.println(tempLine);
@@ -102,15 +103,18 @@ void loop() {
   
   
     // Make an HTTP request:
-    client.println("POST http://localhost:8086/write?db=mydb HTTP/1.1");
-    client.println("Host: localhost:8086");
-//    client.println("User-Agent: Arduino/1.6");
-//    client.println("Connection: close");
-//    client.println("Content-Type: application/x-www-form-urlencoded;");
-//    client.print("Content-Length: ");
-//    client.println(tempLine.length());
+    client.println("POST /write?db=mydb HTTP/1.1");
+    client.println("Host: 172.20.10.2:8086");
+    client.println("User-Agent: Arduino/1.6");
+    client.println("Connection: close");
+    client.println("Content-Type: application/x-www-form-urlencoded;");
+    client.print("Content-Length: ");
+    client.println(tempLine.length() + humLine.length());
     client.println();
     client.println(tempLine);
+//    client.println(tempLine.length() + humLine.length());
+//    client.println();
+//    client.println(combinedLine);
   }
   
   delay(30);
