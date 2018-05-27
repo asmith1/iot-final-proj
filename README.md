@@ -4,9 +4,12 @@
 - //connect to wifi
 - upload to database
   - change HTTP request to upload both humidity and temperature to server at the same time (might need to make 2 requests for this)
-- save last few measurements and make prediction straight in code (smooth it out)
-- set threshold and make the light go on
+- //save last few measurements and make prediction straight in code (smooth it out)
+- //set threshold and make the light go on
+- //shut down in case sensors are disconnected
+- Notify user if sensors are failing too much (Maybe via grafana?)
 - use grafana to visualize data
+- project documentation (Igna working on it)
 
 ## References:
 
