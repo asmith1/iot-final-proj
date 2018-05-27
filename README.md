@@ -10,6 +10,7 @@
 - Notify user if sensors are failing too much (Maybe via grafana?)
 - use grafana to visualize data
 - project documentation (Igna working on it)
+- [optional] have the user control the parameters of temperature and humidity remotely
 
 ## References:
 
