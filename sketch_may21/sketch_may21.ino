@@ -7,7 +7,7 @@
 
 //Connection parameters
 #define RETRY_DELAY 2000
-#define MAX_CONNECTION_ATTEMPTS 1
+#define MAX_CONNECTION_ATTEMPTS 10
 
 //Measurement and prediction parameters
 #define MEASURE_PERIOD 3000
@@ -38,16 +38,16 @@ int failCount = 0;
 FishinoClient client;
 //IPAddress server(192, 168, 1, 1); // BBB
 //IPAddress server(5, 168, 128, 141);
-IPAddress server(172, 20, 10, 2);
-//IPAddress server2(127, 0, 0, 1);
+//IPAddress server(172, 20, 10, 2);
+IPAddress server(192, 168, 43, 237);
 
 DHT dht(DHTPIN, DHT11);
 
 
 // Setup the wireless connection
 boolean connectWiFi() {
-  char WLAN_SSID[]="AshleyiPhone";
-  char WLAN_PASSWD[]="123ashleypass";
+  char WLAN_SSID[]="MyAsus";
+  char WLAN_PASSWD[]="rickandmorty";
   int nattempt=0;
  
    while(!Fishino.reset()) {}
@@ -104,9 +104,7 @@ void setup() {
 
 
 void loop() {
-  // connect to the influxdb port
-  if (!client.connect(server, 8086)) 
-    Serial.println("Did not connect to influxdb port");
+  
 
   //---------------------Measure data-------------------------------
   float temp = dht.readTemperature(); // reads temperature in Celsius
@@ -226,36 +224,60 @@ void loop() {
     }
   
     // creates proper string to post
-    String tempLine = "temperature value=" + String(temp);
-    String humLine = "humidity value=" + String(hum);
-    String combinedLine = tempLine + ", " + humLine;
+    String tempLine = "temp value=" + String((int)temp) + "i";
+    String humLine = "hum value=" + String((int)hum) + "i";
   
     // print the lines that will be posted to the screen
 //    Serial.println(tempLine);
 //    Serial.println(humLine);
+
   
-  
+    // connect to the influxdb port
+    if (!client.connect(server, 8086)) 
+      Serial.println("Did not connect to influxdb port");
+    
     // Make an HTTP request:
     client.println("POST /write?db=mydb HTTP/1.1");
-    client.println("Host: 172.20.10.2:8086");
+    client.println("Host: 192.168.43.237:8086");
     client.println("User-Agent: Arduino/1.6");
     client.println("Connection: close");
     client.println("Content-Type: application/x-www-form-urlencoded;");
     client.print("Content-Length: ");
-    client.println(tempLine.length() + humLine.length());
+    client.println(tempLine.length());
     client.println();
     client.println(tempLine);
-//    client.println(tempLine.length() + humLine.length());
-//    client.println();
-//    client.println(combinedLine);
-  
+
+    delay(30);
+
+    if (client.available())
+    {
+      char Response[600];
+      client.readBytes(Response, client.available());
+      //Serial.println(Response);
+    }
+
+    delay(30);
+    // connect to the influxdb port
+    if (!client.connect(server, 8086)) 
+      Serial.println("Did not connect to influxdb port");
+
+    client.println("POST /write?db=mydb HTTP/1.1");
+    client.println("Host: 192.168.43.237:8086");
+    client.println("User-Agent: Arduino/1.6");
+    client.println("Connection: close");
+    client.println("Content-Type: application/x-www-form-urlencoded;");
+    client.print("Content-Length: ");
+    client.println(humLine.length());
+    client.println();
+    client.println(humLine);
+
     delay(30);
   
     if (client.available())
     {
-      char Response[200];
+      char Response[600];
       client.readBytes(Response, client.available());
-      Serial.println(Response);
+      //Serial.println(Response);
     }
   
   }
@@ -266,9 +288,36 @@ void loop() {
     digitalWrite(COOLING, LOW);
     digitalWrite(SPRINKLERS, LOW);
     digitalWrite(DRYER, LOW);
+    
+    // send a boolean value of failure to another column
+    String failureLine = "fail value=1i";
+    // connect to the influxdb port
+    if (!client.connect(server, 8086)) 
+      Serial.println("Did not connect to influxdb port");
+    
+    // Make an HTTP request:
+    client.println("POST /write?db=mydb HTTP/1.1");
+    client.println("Host: 192.168.43.237:8086");
+    client.println("User-Agent: Arduino/1.6");
+    client.println("Connection: close");
+    client.println("Content-Type: application/x-www-form-urlencoded;");
+    client.print("Content-Length: ");
+    client.println(failureLine.length());
+    client.println();
+    client.println(failureLine);
+
+    delay(30);
+
+    if (client.available())
+    {
+      char Response[600];
+      client.readBytes(Response, client.available());
+      //Serial.println(Response);
+    }
   }
   delay(MEASURE_PERIOD);
 
   // let the monitor know something is going on in case nothing is returned.
   Serial.println("loop...");
 }
+
