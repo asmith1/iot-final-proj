@@ -36,9 +36,6 @@ int failCount = 0;
 
 
 FishinoClient client;
-//IPAddress server(192, 168, 1, 1); // BBB
-//IPAddress server(5, 168, 128, 141);
-//IPAddress server(172, 20, 10, 2);
 IPAddress server(192, 168, 43, 237);
 
 DHT dht(DHTPIN, DHT11);
@@ -61,7 +58,7 @@ boolean connectWiFi() {
   Fishino.staStartDHCP();
 
   nattempt=0;
-  // Wait till an IP address is provided
+  // Wait until an IP address is provided
   while((Fishino.status() != STATION_GOT_IP)  && (nattempt < MAX_CONNECTION_ATTEMPTS)) {
     nattempt++;
     Serial.println(F("Fishino IP ACQUISITION FAILED, RETRYING ... "));
@@ -222,15 +219,12 @@ void loop() {
     else{
       digitalWrite(DRYER, LOW);
     }
+
+  //-------------- Send data to database ------------------
   
     // creates proper string to post
     String tempLine = "temp value=" + String((int)temp) + "i";
     String humLine = "hum value=" + String((int)hum) + "i";
-  
-    // print the lines that will be posted to the screen
-//    Serial.println(tempLine);
-//    Serial.println(humLine);
-
   
     // connect to the influxdb port
     if (!client.connect(server, 8086)) 
@@ -253,7 +247,6 @@ void loop() {
     {
       char Response[600];
       client.readBytes(Response, client.available());
-      //Serial.println(Response);
     }
 
     delay(30);
@@ -277,11 +270,10 @@ void loop() {
     {
       char Response[600];
       client.readBytes(Response, client.available());
-      //Serial.println(Response);
     }
   
   }
-  else{
+  else { // we've reached maximum fail count
     Serial.println("System failure, all actuators have been turned off for safety reasons, please check sensors urgently");
     digitalWrite(SYSTEM_LOST_ALARM, HIGH);
     digitalWrite(HEATING, LOW);
